@@ -21,35 +21,34 @@ Parse.Cloud.define("venueOwners", function(request, response){
 	// this method returns all venues specified
 	var teamQuery = new Parse.Query("TeamScore");
 	var venueQuery = new Parse.Query("Venue");
-	var venues = request.object.get('venues');
+	var venues = request.params.venues;
 	var venueLeaders = [];
 	for (var i = 0; i < venues.length; i++) {
-		Query.get(venues[i], {
-			success: function(venue){
-				teamQuery.equalTo("venue", venue);
-				teamQuery.descending("points");
-				teamQuery.first({
-					success: function(leader) {
-						var dict;
-						dict.venue = venue.objectId;
-						dict.leader = leader.objectId;
-						dict.score = leader.points;
-						venueLeaders.push(dict);
-					},
-					error: function(err) {
-						console.log(err);
-						response.error(err);
-					}
-				});
+		console.log(venues[i]);
+		teamQuery.equalTo("venue", {
+		    __type: "Pointer",
+		    className: "_Venue",
+		    objectId: venues[i]
+		    }
+		);
+		teamQuery.descending("points");
+		teamQuery.find({ 
+			success: function(leader) {
+				console.log(leader); // we are not currently logging this line of code
+				var dict;
+				dict.venue = venue.objectId;
+				dict.leader = leader.objectId;
+				dict.score = leader.points;
+				venueLeaders.push(dict);
 			},
-			error: function(err){
+			error: function(err) {
 				console.log(err);
-				ressponse.error(err);
+				response.error(err);
 			}
 		});
 	};
 	response.success(venueLeaders);
-})
+});
 
 Parse.Cloud.beforeSave("Checkin", function(request, response){
 	var query = new Parse.Query("Checkin");
