@@ -45,9 +45,8 @@ Parse.Cloud.define("venueOwners", function(request, response){
 			error: function(err){
 				console.log(err);
 				ressponse.error(err);
-				break;
 			}
-		};
+		});
 	};
 	response.success(venueLeaders);
 })
