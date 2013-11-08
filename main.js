@@ -1,10 +1,19 @@
 var moment = require('moment');
 
-
 // Use Parse.Cloud.define to define as many cloud functions as you want.
 // For example:
-Parse.Cloud.define("hello", function(request, response) {
-  response.success("Hello world!");
+Parse.Cloud.define("team", function(request, response) {
+  // response.success("Hello world!");
+  var team = new Parse.Query('Team');
+  console.log(team);
+  team.get('w85ow8BTxD', {
+  	success: function(object) {
+  		console.log('fuck yeah!');
+  	},
+  	error: function(err) {
+  		console.log('fuck no!');
+  	}
+  });
 });
 
 var dateOfLastCheckin = function(user, venue){
@@ -23,30 +32,25 @@ Parse.Cloud.define("venueOwners", function(request, response){
 	var venueQuery = new Parse.Query("Venue");
 	var venues = request.params.venues;
 	var venueLeaders = [];
-	for (var i = 0; i < venues.length; i++) {
-		console.log(venues[i]);
-		teamQuery.equalTo("venue", {
-		    __type: "Pointer",
-		    className: "_Venue",
-		    objectId: venues[i]
-		    }
-		);
-		teamQuery.descending("points");
-		teamQuery.find({ 
-			success: function(leader) {
-				console.log(leader); // we are not currently logging this line of code
+	// for (var i = 0; i < venues.length; i++) {
+	// 	console.log(venues[i]);
+		// teamQuery.equalTo("venue", venues[i]);
+		// teamQuery.descending("points");
+		teamQuery.find({
+			success: function(obj) {
+				console.log('this is success', obj); // we are not currently logging this line of code
 				var dict;
 				dict.venue = venue.objectId;
-				dict.leader = leader.objectId;
-				dict.score = leader.points;
+				dict.obj = obj.objectId;
+				dict.score = obj.points;
 				venueLeaders.push(dict);
 			},
 			error: function(err) {
-				console.log(err);
+				console.log('this is our error', err);
 				response.error(err);
 			}
 		});
-	};
+	// };
 	response.success(venueLeaders);
 });
 
