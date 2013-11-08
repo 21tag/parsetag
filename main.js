@@ -4,9 +4,10 @@ var moment = require('moment');
 // For example:
 Parse.Cloud.define("team", function(request, response) {
   // response.success("Hello world!");
-  var team = new Parse.Query('Team');
-  console.log(team);
-  team.get('w85ow8BTxD', {
+  var Team = Parse.Object.extend("Team")
+  var team = new Parse.Query(Team);
+  // console.log(team);
+  team.find({
   	success: function(object) {
   		console.log('fuck yeah!');
   	},
@@ -28,30 +29,31 @@ Parse.Cloud.define("venueOwners", function(request, response){
 	// this method gets venues and their respective owners
 	// request data must include a 'venues' object containing an arbritrary number of venue IDs > 0
 	// this method returns all venues specified
-	var teamQuery = new Parse.Query("TeamScore");
-	var venueQuery = new Parse.Query("Venue");
+	var TeamScore = Parse.Object.extend("TeamScore");
+	var Venue = Parse.Object.extend("Venue");
+	var teamScoreQuery = new Parse.Query(TeamScore);
+	var venueQuery = new Parse.Query(Venue);
+
 	var venues = request.params.venues;
 	var venueLeaders = [];
-	// for (var i = 0; i < venues.length; i++) {
-	// 	console.log(venues[i]);
-		// teamQuery.equalTo("venue", venues[i]);
-		// teamQuery.descending("points");
-		teamQuery.find({
+	var place;
+	
+	for (var i = 0; i < venues.length; i++) {
+		venueQuery.find({
 			success: function(obj) {
-				console.log('this is success', obj); // we are not currently logging this line of code
-				var dict;
-				dict.venue = venue.objectId;
-				dict.obj = obj.objectId;
-				dict.score = obj.points;
-				venueLeaders.push(dict);
+				console.log('someshit');
+				console.log(obj);
+				response.success(obj);
 			},
 			error: function(err) {
-				console.log('this is our error', err);
 				response.error(err);
 			}
 		});
-	// };
-	response.success(venueLeaders);
+		
+	}
+
+	
+
 });
 
 Parse.Cloud.beforeSave("Checkin", function(request, response){
