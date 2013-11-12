@@ -31,28 +31,28 @@ Parse.Cloud.define("venueOwners", function(request, response){
 	// this method returns all venues specified
 	var TeamScore = Parse.Object.extend("TeamScore");
 	var Venue = Parse.Object.extend("Venue");
+
 	var teamScoreQuery = new Parse.Query(TeamScore);
 	var venueQuery = new Parse.Query(Venue);
 
-	var venues = request.params.venues;
 	var venueLeaders = [];
 	var place;
 	
-	for (var i = 0; i < venues.length; i++) {
-		venueQuery.find({
-			success: function(obj) {
-				console.log('someshit');
+	for (var i = 0; i < request.params.venues.length; i++) {
+		teamScoreQuery.equalTo('venue', {
+					__type: "Pointer",
+	        className: "Venue",
+	        objectId: request.params.venues[i]
+		})
+		.descending("points")
+		.limit(1)
+		.find().then(function(obj) {
 				console.log(obj);
-				response.success(obj);
-			},
-			error: function(err) {
-				response.error(err);
-			}
-		});
-		
+				venueLeaders.push(obj);
+			}).then(function(){
+				response.success(venueLeaders);
+			}); // we need a Promise here... likely a .when() see http://parse.com/docs/js/symbols/Parse.Promise.html
 	}
-
-	
 
 });
 
