@@ -1,4 +1,5 @@
 var moment = require('moment');
+var _ = require('underscore');
 
 // Use Parse.Cloud.define to define as many cloud functions as you want.
 // For example:
@@ -21,40 +22,54 @@ var dateOfLastCheckin = function(user, venue){
 
 };
 
-var getVenueHighScore = function(venue){
+var getVenueScoreboard = function(venue) {
 
-};
+}
+
+// write a function locationVenueLeaders to get all places with owner and high score within a geographical bound
+
+// write function: getVenueHighScore that gets all team scores for a venue
+
+
 
 Parse.Cloud.define("venueOwners", function(request, response){
-	// this method gets venues and their respective owners
-	// request data must include a 'venues' object containing an arbritrary number of venue IDs > 0
-	// this method returns all venues specified
 	var TeamScore = Parse.Object.extend("TeamScore");
-	var Venue = Parse.Object.extend("Venue");
-
 	var teamScoreQuery = new Parse.Query(TeamScore);
-	var venueQuery = new Parse.Query(Venue);
+	var venueLeaders = {};
+	var venuePointers = [];
 
-	var venueLeaders = [];
-	var place;
-	
 	for (var i = 0; i < request.params.venues.length; i++) {
-		teamScoreQuery.equalTo('venue', {
-					__type: "Pointer",
-	        className: "Venue",
-	        objectId: request.params.venues[i]
-		})
-		.descending("points")
-		.limit(1)
-		.find().then(function(obj) {
-				console.log(obj);
-				venueLeaders.push(obj);
-			}).then(function(){
-				response.success(venueLeaders);
-			}); // we need a Promise here... likely a .when() see http://parse.com/docs/js/symbols/Parse.Promise.html
+		var venue = {
+						__type: "Pointer",
+		        className: "Venue",
+		        objectId: request.params.venues[i]
+		};
+		venuePointers.push(venue);
 	}
 
+	teamScoreQuery.containedIn('venue', venuePointers)
+	.each(function(result) {
+		var place = result.get('venue').toJSON().objectId;
+
+		if ( (venueLeaders[place] && result.get('points') > venueLeaders[place].toJSON().points) || !venueLeaders[place] ) {
+			venueLeaders[place] = result;
+		} 
+
+	}, {
+		success : function (result){
+			response.success(_.values(venueLeaders));
+		},
+		error : function (error){
+			response.error(error)
+		}
+	})
+
 });
+
+
+// TODO: next time write the 'checkIn' call 
+// how do we increment scores with a 'beforeSave' like below...
+//  make sure to do a check if your teammates are also checked in on this location for score multiplier
 
 Parse.Cloud.beforeSave("Checkin", function(request, response){
 	var query = new Parse.Query("Checkin");
