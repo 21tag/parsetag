@@ -18,18 +18,10 @@ Parse.Cloud.define("team", function(request, response) {
   });
 });
 
-var dateOfLastCheckin = function(user, venue){
-
-};
-
-var getVenueScoreboard = function(venue) {
-
-}
 
 // write a function locationVenueLeaders to get all places with owner and high score within a geographical bound
 
 // write function: getVenueHighScore that gets all team scores for a venue
-
 
 
 Parse.Cloud.define("venueOwners", function(request, response){
@@ -71,12 +63,33 @@ Parse.Cloud.define("venueOwners", function(request, response){
 // how do we increment scores with a 'beforeSave' like below...
 //  make sure to do a check if your teammates are also checked in on this location for score multiplier
 
+// this function takes a userName (or Email), venue ID, and geolocation then 
+// checks the user out of any previous venues and into the new venue 
+// checks if any of the user's teammates are checked in and increments the score accordingly
+// When you call response.success() in a beforeSave-handler, the object you handle is saved
 Parse.Cloud.beforeSave("Checkin", function(request, response){
-	var query = new Parse.Query("Checkin");
-	var user = request.object.get('user');
+
+	var TeamScore = Parse.Object.extend("TeamScore");
+	var teamScoreQuery = new Parse.Query(TeamScore);
+
+	var userLocation = new Parse.Object("PlaceObject");
+	var checkIn = new Parse.Query("Checkin");
+	var checkInQuery = new Parse.Query(checkIn);
+
+	var userName = request.object.get('userName'); // userEmail also works
 	var venue = request.object.get('venue');
-	var userLocation = request.get('geo');
-	// if Checkin && Checkin.active
+	var geo = request.object.get('geo'); // in this format {latitude: xxx, longitude: xxx}
+	var password = request.object.get('password'); // how do we handle passwords securely?
+
+	var point = new Parse.GeoPoint(geo);
+
+	Parse.User.logIn('Tom', 'pass').then( function(user){
+		return checkInQuery.equalTo("user", user) 
+	}).then(function(checkIn){
+		console.log(checkIn);
+		response.success(checkIn); // just a test to see if this works...
+	})
+
 });
 
 
