@@ -67,24 +67,27 @@ Parse.Cloud.define("venueOwners", function(request, response){
 // checks the user out of any previous venues and into the new venue 
 // checks if any of the user's teammates are checked in and increments the score accordingly
 // When you call response.success() in a beforeSave-handler, the object you handle is saved
-Parse.Cloud.beforeSave("Checkin", function(request, response){
+Parse.Cloud.define("Checkin", function(request, response){
 
 	var TeamScore = Parse.Object.extend("TeamScore");
 	var teamScoreQuery = new Parse.Query(TeamScore);
 
 	var userLocation = new Parse.Object("PlaceObject");
-	var checkIn = new Parse.Query("Checkin");
+	var checkIn = Parse.Object.extend("Checkin");
 	var checkInQuery = new Parse.Query(checkIn);
 
-	var userName = request.object.get('userName'); // userEmail also works
-	var venue = request.object.get('venue');
-	var geo = request.object.get('geo'); // in this format {latitude: xxx, longitude: xxx}
-	var password = request.object.get('password'); // how do we handle passwords securely?
+	// console.log(request.params);
+
+	var userName = request.params['userName']; // userEmail also works
+	var venue = request.params['venue'];
+	var geo = request.params['geo']; // in this format {latitude: xxx, longitude: xxx}
+	var password = request.params['password']; // how do we handle passwords securely?
 
 	var point = new Parse.GeoPoint(geo);
 
 	Parse.User.logIn('Tom', 'pass').then( function(user){
-		return checkInQuery.equalTo("user", user) 
+		console.log(user.toJSON().objectId);
+		return checkInQuery.equalTo("userID", user.toJSON().objectId) 
 	}).then(function(checkIn){
 		console.log(checkIn);
 		response.success(checkIn); // just a test to see if this works...
