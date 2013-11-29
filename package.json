@@ -1,0 +1,10 @@
+{
+  "name": "open-recess",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "jasmine-node": "~1.7.0",
+    "karma": "~0.8.5",
+    "http-get": "~0.5.10"
+  }
+}
