@@ -19,12 +19,21 @@ Parse.Cloud.define("team", function(request, response) {
 });
 
 
-// write a function locationVenueLeaders to get all places with owner and high score within a geographical bound
 
-// write function: getVenueHighScore that gets all team scores for a venue
+// TODO: Here is the syntax for a GET request to Checkin to a venue 
+//  --data-urlencode 'where={"VenueScore":{"$select":{"venue":[array of venueIDs]}}' \ 
+//  --data-urlencode 'order=name, -score \
+//  --data-urlencode 'limit=1' \
+
+// write a query that gets all places with owner and high score within a geographical bound
+
+// write a query that gets all scores for a venue
+
+// Before Checkin - confirm the geopoint is within 200 meters of venue
+// After Checkin - update VenueScore, TeamScore, and UserScore
 
 
-Parse.Cloud.define("venueOwners", function(request, response){
+Parse.Cloud.beforeSave("Checkin", function(request, response){
 	var TeamScore = Parse.Object.extend("TeamScore");
 	var teamScoreQuery = new Parse.Query(TeamScore);
 	var venueLeaders = {};
@@ -57,6 +66,13 @@ Parse.Cloud.define("venueOwners", function(request, response){
 	})
 
 });
+
+
+// TODO: (in this order)
+// - Create a user based on this documentation https://parse.com/docs/rest#users
+// - Authenticate that user
+// - Checkin
+// - Make score calculation
 
 
 // TODO: next time write the 'checkIn' call 
