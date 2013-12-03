@@ -67,24 +67,21 @@ Parse.Cloud.define("venueOwners", function(request, response){
 
 
 // Client-side - confirm the player is within 200 meters of venue
-// BeforeSave Checkin - create Checkin object or update 'endTime'
 // afterSave Checkout - update VenueScore, TeamScore, and UserScore
 
-// TODO: (in this order)
-// - Create a user based on this documentation https://parse.com/docs/rest#users
-// - Authenticate that user
-// - Checkin
-// - Make score calculation
 
 
-// TODO: next time write the 'checkIn' call 
-// how do we increment scores with a 'beforeSave' like below...
-//  make sure to do a check if your teammates are also checked in on this location for score multiplier
 
-// this function takes a sessionToken, venue ID, & (optional) checkinID 
-// checks the user out of any previous venues and into the new venue 
-// checks if any of the user's teammates are checked in and increments the score accordingly
+// TODO: write a helper function to manage score-keeping (params: venue && team)
+// get the number of teammates checked in at the venue (in last 5 minutes)
+// update score for VenueScore, TeamScore, and UserScore
+
+// example two teammates checkin to the same location for 5 minutes
+// each player gets 5 points and the team gets 20 points at that venue
 // When you call response.success() in a beforeSave-handler, the object you handle is saved
+
+
+// "Checkin" takes a sessionToken, venue ID, & (optional) checkinID 
 Parse.Cloud.define("Checkin", function(request, response){
 
 	var TeamScore = Parse.Object.extend("TeamScore");
@@ -136,9 +133,6 @@ Parse.Cloud.define("Checkin", function(request, response){
 	}, function(error){
 		console.log(error);
 	})
-
-
-
 
 
 });
