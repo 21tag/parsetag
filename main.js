@@ -108,12 +108,21 @@ Parse.Cloud.define("Checkin", function(request, response){
 		venue = result;
 
 		if (checkinID) {
-
+			checkInQuery.get(checkinID).then(function(result){
+				oldCheckin = result;
+				previousTime = oldCheckin.get('endTime').toJSON();
+				console.log(previousTime);
+				console.log(moment(previousTime));
+				minutes = moment.utc().diff(moment(previousTime), 'minutes');
+				response.success(minutes); 
+			}, function(error){
+				response.error(error);
+			});
 		} else {
 			var newCheckin = new Parse.Object('Checkin');
 			newCheckin.set('user', user);
 			newCheckin.set('venue', venue);
-			newCheckin.set('endTime', moment());
+			newCheckin.set('endTime', new Date());
 			newCheckin.save(null, {
 				success: function(object){
 					response.success(object);
@@ -128,8 +137,6 @@ Parse.Cloud.define("Checkin", function(request, response){
 		console.log(error);
 	})
 
-
-	)
 
 
 
