@@ -70,14 +70,90 @@ Parse.Cloud.define("venueOwners", function(request, response){
 // afterSave Checkout - update VenueScore, TeamScore, and UserScore
 
 
-
-
 // TODO: write a helper function to manage score-keeping (params: venue && team)
 // get the number of teammates checked in at the venue (in last 5 minutes)
 // update score for VenueScore, TeamScore, and UserScore
 
 // example two teammates checkin to the same location for 5 minutes
 // each player gets 5 points and the team gets 20 points at that venue
+
+var scoreUpdateHelper = function(minutes, venueID){ // should we pass 'team' too?
+	var UserScore = Parse.Object.extend('UserScore');
+	var userScoreQuery = new Parse.Query(UserScore);
+
+  var userQuery = new Parse.Query(Parse.User);
+
+	var checkIn = Parse.Object.extend("Checkin");
+	var checkInQuery = new Parse.Query(checkIn);
+
+	var user = Parse.User.current();
+	var team = user.get('team');
+
+	var teammates, multiplier;
+
+	var venue = {
+						__type: "Pointer",
+		        className: "Venue",
+		        objectId: venueID
+	};
+
+	console.log(team);
+
+	console.log(venue);
+
+	userQuery.equalTo('team', team) // the problem is not 'equalTo' but the userQuery itself...
+	.find()
+	.then(function(result) {
+		console.log('does this run?');
+		teammates = result;
+		console.log(teammates);
+		var now = new Date();
+		var fiveMinutesAgo = now.setMinutes(now.getMinutes() - 5);
+		checkInQuery.containedIn('user', teammates)
+		.equalTo('venue', venue).greaterThan('endTime', fiveMinutesAgo)
+		.find()
+		.then(function(result) {
+			console.log(result);
+			multiplier = result.length || 1;
+		},
+		function(error) {
+			response.error(error);
+		});
+	},
+	function(error) {
+		response.error(error);
+	});
+
+	// user.increment('points', minutes);
+	// user.set('currentVenue', venueID); // perhaps we need to do Venue.get(venueID) first
+	// user.save();
+
+	// userScoreQuery.equalTo('venue', venue)
+	// .equalTo('user', user)
+	// .equalTo('team', team)
+	// .find({
+	// 	success : function(result){
+	// 		console.log(result);
+	// 		console.log(typeof result);
+	// 		// multiplier here... query for active checkins
+	// 		result.increment('points', minutes);
+	// 		result.save(null, {
+	// 			success: function(object){
+	// 				return object;
+	// 			},
+	// 			error: function(error){
+	// 				response.error(error)
+	// 			}
+	// 		});
+	// 	},
+	// 	error : function(error){
+	// 		console.log(error);
+	// 	}
+	// });
+
+}
+
+
 // When you call response.success() in a beforeSave-handler, the object you handle is saved
 
 
@@ -108,19 +184,24 @@ Parse.Cloud.define("Checkin", function(request, response){
 			checkInQuery.get(checkinID).then(function(result){
 				oldCheckin = result;
 				previousTime = oldCheckin.get('endTime').toJSON();
-				console.log(previousTime);
-				console.log(moment(previousTime));
+				oldCheckin.set('endTime', new Date());
+				oldCheckin.save(null, {
+					success: function(object){
+						response.success(object);
+					},
+					error: function(error){
+						response.error(error)
+					}
+				});
 				minutes = moment.utc().diff(moment(previousTime), 'minutes');
-				response.success(minutes); 
+				scoreUpdateHelper(minutes, venueID);
+				response.success(minutes);
 			}, function(error){
 				response.error(error);
 			});
 		} else {
 			var newCheckin = new Parse.Object('Checkin');
-			newCheckin.set('user', user);
-			newCheckin.set('venue', venue);
-			newCheckin.set('endTime', new Date());
-			newCheckin.save(null, {
+			newCheckin.save({'endTime': new Date(), 'venue': venue, 'user': user}, {
 				success: function(object){
 					response.success(object);
 				},
