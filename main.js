@@ -198,6 +198,7 @@ Parse.Cloud.define("Checkin", function(request, response){
 				oldCheckin.set('endTime', new Date());
 				oldCheckin.save(null, {
 					success: function(object){
+<<<<<<< HEAD
 						userQuery.equalTo('team', user.get("team"))
 						.find()
 						.then(function(result) {
@@ -221,6 +222,9 @@ Parse.Cloud.define("Checkin", function(request, response){
 						function(error) {
 							response.error(error);
 						});
+=======
+						scoreUpdateHelper(minutes, venueID);
+>>>>>>> temp
 						// response.success(object);
 					},
 					error: function(error){
@@ -228,8 +232,12 @@ Parse.Cloud.define("Checkin", function(request, response){
 					}
 				});
 				minutes = moment.utc().diff(moment(previousTime), 'minutes');
+<<<<<<< HEAD
 
 				response.success(minutes);
+=======
+				// response.success(minutes);
+>>>>>>> temp
 			}, function(error){
 				response.error(error);
 			});
