@@ -83,6 +83,10 @@ var scoreUpdateHelper = function(minutes, venueID){ // should we pass 'team' too
 
   var userQuery = new Parse.Query(Parse.User);
 
+  userQuery.find().then(function(result){
+  	console.log(result);
+  });
+
 	var checkIn = Parse.Object.extend("Checkin");
 	var checkInQuery = new Parse.Query(checkIn);
 
@@ -96,8 +100,6 @@ var scoreUpdateHelper = function(minutes, venueID){ // should we pass 'team' too
 		        className: "Venue",
 		        objectId: venueID
 	};
-
-	console.log(team);
 
 	console.log(venue);
 
@@ -166,6 +168,11 @@ Parse.Cloud.define("Checkin", function(request, response){
 	var checkIn = Parse.Object.extend("Checkin");
 	var checkInQuery = new Parse.Query(checkIn);
 
+  var userQuery = new Parse.Query(Parse.User);
+
+	var UserScore = Parse.Object.extend('UserScore');
+	var userScoreQuery = new Parse.Query(UserScore);
+
 	var Venue = Parse.Object.extend("Venue");
 	var venueQuery = new Parse.Query(Venue); 
 
@@ -177,6 +184,10 @@ Parse.Cloud.define("Checkin", function(request, response){
 
 	var venue;
 
+  // userQuery.find().then(function(result){
+  // 	console.log(result);
+  // });
+
 	venueQuery.get(venueID).then(function(result){
 		venue = result;
 
@@ -187,14 +198,37 @@ Parse.Cloud.define("Checkin", function(request, response){
 				oldCheckin.set('endTime', new Date());
 				oldCheckin.save(null, {
 					success: function(object){
-						response.success(object);
+						userQuery.equalTo('team', user.get("team"))
+						.find()
+						.then(function(result) {
+							teammates = result;
+							console.log(teammates);
+							var now = new Date();
+							var fiveMinutesAgo = now.setMinutes(now.getMinutes() - 5);
+							checkInQuery.containedIn('user', teammates)
+							.equalTo('venue', venue).greaterThan('endTime', fiveMinutesAgo)
+							.find()
+							.then(function(result) {
+								console.log(result);
+								multiplier = result.length || 1;
+								// update scores here...
+								response.success(multiplier);
+							},
+							function(error) {
+								response.error(error);
+							});
+						},
+						function(error) {
+							response.error(error);
+						});
+						// response.success(object);
 					},
 					error: function(error){
 						response.error(error)
 					}
 				});
 				minutes = moment.utc().diff(moment(previousTime), 'minutes');
-				scoreUpdateHelper(minutes, venueID);
+
 				response.success(minutes);
 			}, function(error){
 				response.error(error);
