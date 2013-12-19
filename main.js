@@ -187,15 +187,15 @@ Parse.Cloud.define("Checkin", function(request, response){
 				oldCheckin.set('endTime', new Date());
 				oldCheckin.save(null, {
 					success: function(object){
-						response.success(object);
+						scoreUpdateHelper(minutes, venueID);
+						// response.success(object);
 					},
 					error: function(error){
 						response.error(error)
 					}
 				});
 				minutes = moment.utc().diff(moment(previousTime), 'minutes');
-				scoreUpdateHelper(minutes, venueID);
-				response.success(minutes);
+				// response.success(minutes);
 			}, function(error){
 				response.error(error);
 			});
