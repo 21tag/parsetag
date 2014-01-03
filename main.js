@@ -92,7 +92,7 @@ var scoreUpdateHelper = function(user, minutes, venueID, cbObject){ // should we
 				.find({
 					success : function(result){
 						if (result.length === 0) {
-							userscore = = new Parse.Object('UserScore');
+							userscore = new Parse.Object('UserScore');
 							userscore.save({
 								"team": team,
 								"user": user,
