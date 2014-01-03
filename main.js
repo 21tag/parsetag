@@ -1,34 +1,10 @@
 var moment = require('moment');
 var _ = require('underscore');
 
-// Use Parse.Cloud.define to define as many cloud functions as you want.
-// For example:
-Parse.Cloud.define("team", function(request, response) {
-  // response.success("Hello world!");
-  var Team = Parse.Object.extend("Team")
-  var team = new Parse.Query(Team);
-  // console.log(team);
-  team.find({
-  	success: function(object) {
-  		console.log('fuck yeah!');
-  	},
-  	error: function(err) {
-  		console.log('fuck no!');
-  	}
-  });
-});
-
-
-
 // TODO: Here is the syntax for a GET request 
 //  --data-urlencode 'where={"VenueScore":{"$select":{"venue":[array of venueIDs]}}' \ 
 //  --data-urlencode 'order=name, -score \
 //  --data-urlencode 'limit=1' \
-
-// write a query that gets all places with owner and high score within a geographical bound
-
-// write a query that gets all scores for a venue
-
 
 
 Parse.Cloud.define("venueOwners", function(request, response){
@@ -66,11 +42,7 @@ Parse.Cloud.define("venueOwners", function(request, response){
 });
 
 
-// Client-side - confirm the player is within 200 meters of venue
-// afterSave Checkout - update VenueScore, TeamScore, and UserScore
-
-
-// TODO: write a helper function to manage score-keeping (params: venue && team)
+// This is a helper function to manage score-keeping (params: venue && team)
 // get the number of teammates checked in at the venue (in last 5 minutes)
 // update score for VenueScore, TeamScore, and UserScore
 
@@ -101,32 +73,24 @@ var scoreUpdateHelper = function(user, minutes, venueID, cbObject){ // should we
 		        objectId: venueID
 	};
 
-	console.log(venue);
-
-	userQuery.equalTo('team', team) // the problem is not 'equalTo' but the userQuery itself...
+	userQuery.equalTo('team', team)
 	.find()
 	.then(function(result) {
 		teammates = result;
-		console.log('teammates', teammates);
 		var now = new Date();
 		var fiveMinutesAgo = moment().subtract("m", 5).toDate();
-		console.log('fiveminutesago', fiveMinutesAgo);
 
 		checkInQuery.containedIn('user', teammates)
 		.equalTo('venue', venue).greaterThan('endTime', fiveMinutesAgo)
 		.find()
 		.then(function(result) {
-			console.log(result);
 			multiplier = result.length || 1;
-
-			console.log(user);
 
 			userScoreQuery.equalTo('venue', venue)
 				.equalTo('user', user)
 				.equalTo('team', team)
 				.find({
 					success : function(result){
-						console.log(result);
 						if (result.length === 0) {
 							userscore = = new Parse.Object('UserScore');
 							userscore.save({
@@ -137,12 +101,12 @@ var scoreUpdateHelper = function(user, minutes, venueID, cbObject){ // should we
 							});
 						} else {
 							result[0].increment('points', minutes);
-							result[0].save(); // perhaps include success, error callbacks here
+							result[0].save();
 							userscore = result[0];
 						};
 					},
 					error : function(error){
-						console.log(error);
+						response.error(error);
 					}
 				}).then(function(){
 					teamScoreQuery.equalTo('venue', venue)
@@ -270,10 +234,10 @@ Parse.Cloud.define("Checkin", function(request, response){
 });
 
 
-Parse.Cloud.beforeSave("User", function(request, response){
-	// var location = request.params.geo
-	// var user = request.params.user
-	// var venue = request.params.venue
-	var query = new Parse.Query("Checkin")
-});
+// Parse.Cloud.beforeSave("User", function(request, response){
+// 	// var location = request.params.geo
+// 	// var user = request.params.user
+// 	// var venue = request.params.venue
+// 	var query = new Parse.Query("Checkin")
+// });
 
