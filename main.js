@@ -119,7 +119,7 @@ var scoreUpdateHelper = function(user, minutes, venueID, cbObject){ // should we
 										'venue': venue,
 										'points': minutes * multiplier
 									});
-									cbObject.success({ 'teamscore' : newTeamScore, 'userscore' : newUserScore })
+									cbObject.success({ 'teamscore' : newTeamScore, 'userscore' : userscore })
 								} else {
 									result[0].increment('points', minutes * multiplier);
 									result[0].save();
