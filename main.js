@@ -196,7 +196,7 @@ Parse.Cloud.define("Checkin", function(request, response){
         console.log(previousTime);
 				minutes = moment.utc().diff(moment(previousTime), 'minutes');
         if (minutes > 30) {
-          response.error(299, "Sorry, that checkin session has expired.");
+          response.error(299); // Look for this http response on the client and interpret it as an expired checkin session
         } else {
           oldCheckin.set('endTime', new Date());
           oldCheckin.save(null, {
