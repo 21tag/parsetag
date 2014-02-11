@@ -183,7 +183,7 @@ Parse.Cloud.define("Checkin", function(request, response){
 			response.error(error);
 		}
 	}).then(function(){
-		console.log('wtf');
+		console.log('user saved');
 	});
 
 	venueQuery.get(venueID).then(function(result){
@@ -193,24 +193,29 @@ Parse.Cloud.define("Checkin", function(request, response){
 			checkInQuery.get(checkinID).then(function(result){
 				oldCheckin = result;
 				previousTime = oldCheckin.get('endTime').toJSON();
-				oldCheckin.set('endTime', new Date());
-				oldCheckin.save(null, {
-					success: function(object){
-						scoreUpdateHelper(user, minutes, venueID, {
-							success: function(object){
-								response.success(object);
-							},
-							error: function(error){
-								response.error(error);
-							}});
-						// response.success(object);
-					},
-					error: function(error){
-						response.error(error)
-					}
-				});
+        console.log(previousTime);
 				minutes = moment.utc().diff(moment(previousTime), 'minutes');
-				// response.success(minutes);
+        if (minutes > 30) {
+          response.error(299, "Sorry, that checkin session has expired.");
+        } else {
+          oldCheckin.set('endTime', new Date());
+          oldCheckin.save(null, {
+            success: function(object){
+              scoreUpdateHelper(user, minutes, venueID, {
+                success: function(object){
+                  response.success(object);
+                },
+                error: function(error){
+                  response.error(error);
+                }});
+              // response.success(object);
+            },
+            error: function(error){
+              response.error(error)
+            }
+          });
+  				// response.success(minutes);
+        }
 			}, function(error){
 				response.error(error);
 			});
